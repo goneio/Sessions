@@ -1,0 +1,10 @@
+{
+    "name": "segura/sessions",
+    "authors": [
+        {
+            "name": "Matthew Baggett",
+            "email": "matthew@baggett.me"
+        }
+    ],
+    "require": {}
+}
