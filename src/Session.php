@@ -32,9 +32,11 @@ class Session
         return self::$_instance;
     }
 
+    /**
+     * @return Session
+     */
     public static function get_session()
     {
-
         return self::$_instance;
     }
 
