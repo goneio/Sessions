@@ -7,6 +7,10 @@ class Session
 {
     private static $_instance;
     const lifetime = 86400;
+    const ALERT_SUCCESS = 'success';
+    const ALERT_INFO = 'info';
+    const ALERT_WARNING = 'warning';
+    const ALERT_DANGER = 'danger';
 
     private $redis;
 
@@ -78,5 +82,22 @@ class Session
         } else {
             return false;
         }
+    }
+
+    public function addAlert($alertType = self::ALERT_INFO, $message){
+        $err = $this->getAlerts();
+        if(!is_array($err)){
+            $err = [];
+        }
+        $err[] = ['type' => $alertType, 'message' => $message];
+        return $this->set("storedAlerts", $err);
+    }
+
+    public function getAlerts(){
+        return $this->get("storedAlerts");
+    }
+
+    public function clearAlerts(){
+        $this->set("storedAlerts", []);
     }
 }
