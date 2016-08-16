@@ -5,11 +5,12 @@ use Predis\Client as RedisClient;
 
 class SessionHandler implements \SessionHandlerInterface
 {
+	private $oldID;
 
     /** @var RedisClient */
     private $redis;
 
-    private $keyLifeTime = 86400;
+    private $keyLifeTime;
 
     public function __construct(RedisClient $redis, $keyLifeTime = 86400)
     {
@@ -29,10 +30,20 @@ class SessionHandler implements \SessionHandlerInterface
 
     public function read($id)
     {
+		// shall we regenerate
+		if (!empty($this->oldID)) $id = $this->oldID ? $this->oldID : $id;
+
         $serialised = $this->redis->get("session_{$id}");
         if($serialised != null){
-            $this->redis->expire("session_{$id}", $this->keyLifeTime);
-            return unserialize($serialised);
+			if (!empty($this->oldID))
+			{
+				// clean up old session after regenerate
+				$this->redis->del("session_{$id}");
+				$this->oldID = null;
+			}
+			else $this->redis->expire("session_{$id}", $this->keyLifeTime);
+
+			return unserialize($serialised);
         }else{
             return false;
         }
@@ -47,7 +58,9 @@ class SessionHandler implements \SessionHandlerInterface
 
     public function destroy($id)
     {
-        $this->redis->del("session_{$id}");
+		// do not delete redis data on destroy, allow regeneration to read old session
+		$this->oldID = $id;
+		return true;
     }
 
     public function gc($maxlifetime)

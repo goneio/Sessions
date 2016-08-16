@@ -6,7 +6,8 @@ use Predis\Client as RedisClient;
 class Session
 {
     private static $_instance;
-    const lifetime = 86400;
+    const lifetime = 43200;
+	const REGENERATE_TIME = 60;
     const ALERT_SUCCESS = 'success';
     const ALERT_INFO = 'info';
     const ALERT_WARNING = 'warning';
@@ -23,8 +24,7 @@ class Session
 
         // each client should remember their session id for EXACTLY 1 day
         session_set_cookie_params(Session::lifetime);
-
-        session_set_save_handler(new SessionHandler($redis, Session::lifetime));
+        session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
 
         // Begin the Session
         @session_start();
@@ -44,6 +44,11 @@ class Session
         return self::$_instance;
     }
 
+    public static function regenerate($key)
+    {
+		return Session::get_session()->_regenerate($key);
+    }
+
     public static function get($key)
     {
         return Session::get_session()->_get($key);
@@ -58,6 +63,19 @@ class Session
     {
         return Session::get_session()->_dispose($key);
     }
+
+    public function _regenerate($key)
+    {
+        if ($this->_get($key))
+		{
+			$ts = $this->_get('regenerationTimestamp');
+			if (!$ts || $ts + self::REGENERATE_TIME < time())
+			{
+				session_regenerate_id(true);
+				$this->_set('regenerationTimestamp', time());
+			}
+		}
+	}
 
     public function _get($key)
     {
