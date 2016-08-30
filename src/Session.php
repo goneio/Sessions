@@ -7,7 +7,7 @@ class Session
 {
     private static $_instance;
     const lifetime = 43200;
-	const REGENERATE_TIME = 60;
+	const REGENERATE_TIME = 5;
     const ALERT_SUCCESS = 'success';
     const ALERT_INFO = 'info';
     const ALERT_WARNING = 'warning';
