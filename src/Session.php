@@ -27,7 +27,7 @@ class Session
         session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
 
         // Begin the Session
-        @session_start();
+        session_start();
     }
 
     public static function start(\Predis\Client $redis)
