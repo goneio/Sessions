@@ -45,7 +45,7 @@ class SessionHandler implements \SessionHandlerInterface
 
 			return unserialize($serialised);
         }else{
-            return false;
+            return '';
         }
     }
 
