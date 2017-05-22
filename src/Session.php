@@ -26,6 +26,9 @@ class Session
         session_set_cookie_params(Session::lifetime);
         session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
 
+	// Prevent session from influencing the slim headers sent back to the browser.
+        session_cache_limiter(null);
+
         // Begin the Session
         session_start();
     }
