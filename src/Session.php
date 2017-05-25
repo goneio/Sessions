@@ -26,7 +26,7 @@ class Session
         session_set_cookie_params(Session::lifetime);
         session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
 
-	// Prevent session from influencing the slim headers sent back to the browser.
+	    // Prevent session from influencing the slim headers sent back to the browser.
         session_cache_limiter(null);
 
         // Begin the Session
@@ -47,9 +47,19 @@ class Session
         return self::$_instance;
     }
 
-    public static function regenerate($key)
+    public static function regenerate()
     {
-		return Session::get_session()->_regenerate($key);
+		return self::get_session()->_regenerate();
+    }
+
+    public static function isSet($key)
+    {
+        return isset($_SESSION[$key]);
+    }
+
+    public static function getAll()
+    {
+        return Session::get_session()->_getAll();
     }
 
     public static function get($key)
@@ -67,18 +77,27 @@ class Session
         return Session::get_session()->_dispose($key);
     }
 
-    public function _regenerate($key)
+    public function _regenerate()
     {
-        if ($this->_get($key))
-		{
-			$ts = $this->_get('regenerationTimestamp');
-			if (!$ts || $ts + self::REGENERATE_TIME < time())
-			{
-				session_regenerate_id(true);
-				$this->_set('regenerationTimestamp', time());
-			}
-		}
+        $ts = $this->_get('regenerationTimestamp');
+        if (!$ts || $ts + self::REGENERATE_TIME < time())
+        {
+            session_regenerate_id(true);
+            $this->_set('regenerationTimestamp', time());
+            return true;
+        }
+        return false;
 	}
+
+	public function _getAll()
+    {
+        $all = [];
+        foreach($_SESSION as $key => $value){
+            $all[$key] = unserialize($value);
+        }
+        ksort($all);
+        return $all;
+    }
 
     public function _get($key)
     {
