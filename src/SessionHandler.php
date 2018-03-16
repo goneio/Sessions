@@ -55,7 +55,7 @@ class SessionHandler implements \SessionHandlerInterface
 
     public function write($id, $data)
     {
-        if(self::$dirtyCheck['read-' . $id] != crc32($data)) {
+        if (self::$dirtyCheck['read-' . $id] != crc32($data)) {
             $this->redis->set("session_{$id}", serialize($data));
             $this->redis->expire("session_{$id}", $this->keyLifeTime);
         }
