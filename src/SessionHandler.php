@@ -12,7 +12,7 @@ class SessionHandler implements \SessionHandlerInterface
     /** @var RedisClient */
     private $redis;
 
-    private $keyLifeTime;
+    private $keyLifeTime = 86400;
 
     public function __construct(RedisClient $redis, $keyLifeTime = 86400)
     {
