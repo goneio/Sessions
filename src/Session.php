@@ -7,7 +7,7 @@ class Session
 {
     private static $_instance;
     const lifetime = 43200;
-	const REGENERATE_TIME = 5;
+    const REGENERATE_TIME = 5;
     const ALERT_SUCCESS = 'success';
     const ALERT_INFO = 'info';
     const ALERT_WARNING = 'warning';
@@ -26,7 +26,7 @@ class Session
         session_set_cookie_params(Session::lifetime);
         session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
 
-	    // Prevent session from influencing the slim headers sent back to the browser.
+        // Prevent session from influencing the slim headers sent back to the browser.
         session_cache_limiter(null);
 
         // Begin the Session
@@ -49,7 +49,7 @@ class Session
 
     public static function regenerate()
     {
-		return self::get_session()->_regenerate();
+        return self::get_session()->_regenerate();
     }
 
     public static function isSet($key)
@@ -80,19 +80,18 @@ class Session
     public function _regenerate()
     {
         $ts = $this->_get('regenerationTimestamp');
-        if (!$ts || $ts + self::REGENERATE_TIME < time())
-        {
+        if (!$ts || $ts + self::REGENERATE_TIME < time()) {
             session_regenerate_id(true);
             $this->_set('regenerationTimestamp', time());
             return true;
         }
         return false;
-	}
+    }
 
-	public function _getAll()
+    public function _getAll()
     {
         $all = [];
-        foreach($_SESSION as $key => $value){
+        foreach ($_SESSION as $key => $value) {
             $all[$key] = unserialize($value);
         }
         ksort($all);
@@ -124,20 +123,23 @@ class Session
         }
     }
 
-    public function addAlert($alertType = self::ALERT_INFO, $message){
+    public function addAlert($alertType = self::ALERT_INFO, $message)
+    {
         $err = $this->getAlerts();
-        if(!is_array($err)){
+        if (!is_array($err)) {
             $err = [];
         }
         $err[] = ['type' => $alertType, 'message' => $message];
         return $this->set("storedAlerts", $err);
     }
 
-    public function getAlerts(){
+    public function getAlerts()
+    {
         return $this->get("storedAlerts");
     }
 
-    public function clearAlerts(){
+    public function clearAlerts()
+    {
         $this->set("storedAlerts", []);
     }
 }
