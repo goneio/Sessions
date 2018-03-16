@@ -14,6 +14,11 @@ class SessionHandler implements \SessionHandlerInterface
 
     private $keyLifeTime = 86400;
 
+    private function useAPCU() : bool
+    {
+        return function_exists('apcu_store');
+    }
+
     public function __construct(RedisClient $redis, $keyLifeTime = 86400)
     {
         $this->redis = $redis;
@@ -32,6 +37,11 @@ class SessionHandler implements \SessionHandlerInterface
 
     public function read($id)
     {
+        if($this->useAPCU()){
+            if(apcu_exists('read-' . $id)){
+                return apcu_fetch('read-' . $id);
+            }
+        }
         // shall we regenerate
         if (!empty($this->oldID)) {
             $id = $this->oldID ? $this->oldID : $id;
@@ -48,14 +58,24 @@ class SessionHandler implements \SessionHandlerInterface
             $result = '';
         }
 
-        self::$dirtyCheck['read-' . $id] = crc32($result);
+        if($this->useAPCU()) {
+            apcu_store('read-' . $id, $result, 30);
+        }else{
+            self::$dirtyCheck['read-' . $id] = crc32($result);
+        }
 
         return $result;
     }
 
     public function write($id, $data)
     {
-        if (self::$dirtyCheck['read-' . $id] != crc32($data)) {
+        $dirty = false;
+        if($this->useAPCU()){
+            $dirty = crc32(apcu_fetch('read-' . $id)) != crc32($data);
+        }else{
+            $dirty = self::$dirtyCheck['read-' . $id] != crc32($data);
+        }
+        if ($dirty) {
             $this->redis->set("session_{$id}", serialize($data));
             $this->redis->expire("session_{$id}", $this->keyLifeTime);
         }
