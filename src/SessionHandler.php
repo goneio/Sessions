@@ -35,6 +35,15 @@ class SessionHandler implements \SessionHandlerInterface
         return true;
     }
 
+    public function clearLocalCache()
+    {
+        if($this->useAPCU()) {
+            apcu_clear_cache();
+        }else{
+            self::$dirtyCheck = [];
+        }
+    }
+
     public function read($id)
     {
         if($this->useAPCU()){

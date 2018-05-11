@@ -6,6 +6,7 @@ use Predis\Client as RedisClient;
 class Session
 {
     private static $_instance;
+    private static $_session_handler;
     const lifetime = 43200;
     const REGENERATE_TIME = 5;
     const ALERT_SUCCESS = 'success';
@@ -18,19 +19,25 @@ class Session
     public function __construct(RedisClient $redis)
     {
         $this->redis = $redis;
+        self::$_session_handler = new SessionHandler($redis, Session::lifetime);
 
         // server should keep session data for AT LEAST 1 day
         ini_set('session.gc_maxlifetime', Session::lifetime);
 
         // each client should remember their session id for EXACTLY 1 day
         session_set_cookie_params(Session::lifetime);
-        session_set_save_handler(new SessionHandler($redis, Session::lifetime), true);
+        session_set_save_handler(self::$_session_handler, true);
 
         // Prevent session from influencing the slim headers sent back to the browser.
         session_cache_limiter(null);
 
         // Begin the Session
         session_start();
+    }
+
+    public static function getSessionHandler() : SessionHandler
+    {
+        return self::$_session_handler;
     }
 
     public static function start(\Predis\Client $redis)
