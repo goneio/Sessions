@@ -71,7 +71,7 @@ class Session
 
     public static function get($key)
     {
-        return Session::get_session()->_get($key);
+        return Session::get_session() ? Session::get_session()->_get($key) : false;
     }
 
     public static function set($key, $value)
