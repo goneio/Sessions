@@ -42,7 +42,9 @@ class Session
 
     public static function start(\Predis\Client $redis)
     {
-        self::$_instance = new Session($redis);
+        if(!self::$_instance) {
+            self::$_instance = new Session($redis);
+        }
         return self::$_instance;
     }
 
