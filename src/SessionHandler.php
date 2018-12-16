@@ -1,5 +1,5 @@
 <?php
-namespace Segura\Session;
+namespace Gone\Session;
 
 use Predis\Client as RedisClient;
 

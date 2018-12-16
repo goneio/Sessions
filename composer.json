@@ -1,5 +1,5 @@
 {
-    "name": "segura/sessions",
+    "name": "gone.io/sessions",
     "authors": [
         {
             "name": "Matthew Baggett",
@@ -11,12 +11,12 @@
     },
     "autoload"   : {
         "psr-4": {
-            "Segura\\Session\\": "src"
+            "Gone\\Session\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Segura\\Session\\Test\\": "tests/"
+            "Gone\\Session\\Test\\": "tests/"
         }
     }
 }
