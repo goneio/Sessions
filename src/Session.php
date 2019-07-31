@@ -1,7 +1,7 @@
 <?php
 namespace Gone\Session;
 
-use Predis\Client as RedisClient;
+use Gone\AppCore\Redis\Redis;
 
 class Session
 {
@@ -16,13 +16,11 @@ class Session
 
     private $redis;
 
-    public function __construct(RedisClient $redis)
+    public function __construct(Redis $redis)
     {
         $this->redis = $redis;
-        self::$_session_handler = new SessionHandler($redis, Session::lifetime);
 
-        // server should keep session data for AT LEAST 1 day
-        ini_set('session.gc_maxlifetime', Session::lifetime);
+        self::$_session_handler = new SessionHandler($redis, Session::lifetime);
 
         // each client should remember their session id for EXACTLY 1 day
         session_set_cookie_params(Session::lifetime);
@@ -40,7 +38,7 @@ class Session
         return self::$_session_handler;
     }
 
-    public static function start(\Predis\Client $redis)
+    public static function start(Redis $redis)
     {
         if(!self::$_instance) {
             self::$_instance = new Session($redis);

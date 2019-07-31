@@ -1,6 +1,7 @@
 <?php
 namespace Gone\Session;
 
+use Gone\AppCore\Redis\Redis;
 use Predis\Client as RedisClient;
 
 class SessionHandler implements \SessionHandlerInterface
@@ -19,7 +20,7 @@ class SessionHandler implements \SessionHandlerInterface
         return function_exists('apcu_store');
     }
 
-    public function __construct(RedisClient $redis, $keyLifeTime = 86400)
+    public function __construct(Redis $redis, $keyLifeTime = 86400)
     {
         $this->redis = $redis;
         $this->keyLifeTime = $keyLifeTime;
@@ -55,15 +56,20 @@ class SessionHandler implements \SessionHandlerInterface
         if (!empty($this->oldID)) {
             $id = $this->oldID ? $this->oldID : $id;
         }
-        $serialised = $this->redis->get("session_{$id}");
-        if ($serialised != null) {
-            if (!empty($this->oldID)) {
-                // clean up old session after regenerate
-                $this->redis->del("session_{$id}");
-                $this->oldID = null;
+
+        if($this->redis->exists("session_{$id}")) {
+            $serialised = $this->redis->get("session_{$id}");
+            if ($serialised != null) {
+                if (!empty($this->oldID)) {
+                    // clean up old session after regenerate
+                    $this->redis->del("session_{$id}");
+                    $this->oldID = null;
+                }
+                $result = unserialize($serialised);
+            } else {
+                $result = '';
             }
-            $result = unserialize($serialised);
-        } else {
+        }else{
             $result = '';
         }
 
