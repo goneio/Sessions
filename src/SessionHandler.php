@@ -57,12 +57,12 @@ class SessionHandler implements \SessionHandlerInterface
             $id = $this->oldID ? $this->oldID : $id;
         }
 
-        if($this->redis->exists("session_{$id}")) {
-            $serialised = $this->redis->get("session_{$id}");
+        if($this->redis->exists("session:{$id}")) {
+            $serialised = $this->redis->get("session:{$id}");
             if ($serialised != null) {
                 if (!empty($this->oldID)) {
                     // clean up old session after regenerate
-                    $this->redis->del("session_{$id}");
+                    $this->redis->del("session:{$id}");
                     $this->oldID = null;
                 }
                 $result = unserialize($serialised);
@@ -91,8 +91,8 @@ class SessionHandler implements \SessionHandlerInterface
             $dirty = self::$dirtyCheck['read-' . $id] != crc32($data);
         }
         if ($dirty) {
-            $this->redis->set("session_{$id}", serialize($data));
-            $this->redis->expire("session_{$id}", $this->keyLifeTime);
+            $this->redis->set("session:{$id}", serialize($data));
+            $this->redis->expire("session:{$id}", $this->keyLifeTime);
         }
         return true;
     }
